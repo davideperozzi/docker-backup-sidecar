@@ -39,7 +39,7 @@ else
   exit $?
 fi
 
-if [ $? -eq 0 ];
+if [ $? -eq 0 ]; then
   # Cleanup archive
   rm /var/archives/$BACKUP_NAME.tar.gz
 else

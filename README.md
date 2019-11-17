@@ -15,9 +15,9 @@ backup:
   environment:
     DATABASE_HOST: database
     DATABASE_USERNAME: root
-    DATABASE_PASSWORD: ************
-    AWS_ACCESS_KEY_ID: ******************
-    AWS_SECRET_ACCESS_KEY: *********************
+    DATABASE_PASSWORD: yourDbPassword
+    AWS_ACCESS_KEY_ID: AWSAccessKeyId
+    AWS_SECRET_ACCESS_KEY: AWSSecretAccessKey
     AWS_BUCKET_NAME: the_name_of_the_bucket
     AWS_BUCKET_PATH: /path/inside/bucket # Default: /
   volumes:
@@ -35,7 +35,7 @@ To change the schedule for the backup crontab you can simply override the follow
 ```yml
 ...
 environment:
-  CRON_SCHEDULE: * * * * * * # Run script every minute
+  CRON_SCHEDULE: '* * * * *' # Run script every minute
 ```
 
 > Default schedule is `0 0 * * */3,*/6` (twice a week)
