@@ -1,33 +1,29 @@
 # Docker backup sidecar
-A very basic backup implementation, which uses mysqldump, tar and aws-cli to upload relevant data to a bucket. Rollback mechanism **not included** (yet).
+A very basic backup implementation. Rollback mechanism **not included** (yet).
 
 ## Integreation
 To use this backup script you can simply include it in your stack like this:
 
 ```yml
-database:
-  image: mysql/mysql-server:5.7
-  ...
-
 backup:
-  image: backup_${APP_NAME}:latest
-  build: ./packages/backup
+  image: :latest
   environment:
-    DATABASE_HOST: database
-    DATABASE_USERNAME: root
-    DATABASE_PASSWORD: yourDbPassword
     AWS_ACCESS_KEY_ID: AWSAccessKeyId
     AWS_SECRET_ACCESS_KEY: AWSSecretAccessKey
-    AWS_BUCKET_NAME: the_name_of_the_bucket
+    AWS_BUCKET_NAME: backup.bucket.name
     AWS_BUCKET_PATH: /path/inside/bucket # Default: /
-  volumes:
-    - shared_data:/var/backup/uploads:ro # Make sure it's read-only
-
-volumes:
-  shared_data:
 ```
 
-> Every folder within `/var/backup/` will be included into the archive
+### Workflow
+Inside this image is a folder `/var/out/s3`, which also acts as a `volume`.
+Every file inside this folder wil be transferred to the given AWS bucket.
+
+### The backups scripts
+There are two folders available, also mounted as volumes: `/opt/scripts/start` and `/opt/scripts/end`.
+Each script inside `/opt/scripts/start` will be executed before the upload to S3 and each script
+inside the `/opt/scripts/end` will be used after a successful upload to S3.
+
+> Please be aware, that the `/var/out/s3` folder will be cleared after a successful upload
 
 ## Controlling the crontab schedule
 To change the schedule for the backup crontab you can simply override the following environment variable inside your backup service:

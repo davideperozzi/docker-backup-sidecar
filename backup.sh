@@ -14,6 +14,7 @@ function execute_script {
 # Execute start scripts
 if [ "$(ls -A $START_SCRIPTS)" ]; then
   for script in "$START_SCRIPTS"/*; do
+    echo "[BACKUP][Notice] Executing script '$script'"
     execute_script $script
   done
 fi
@@ -37,6 +38,7 @@ fi
 # Execute end scripts
 if [ "$(ls -A $END_SCRIPTS)" ]; then
   for script in "$END_SCRIPTS"/*; do
+    echo "[BACKUP][Notice] Executing script '$script'"
     execute_script $script
   done
 fi
