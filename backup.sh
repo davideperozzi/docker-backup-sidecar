@@ -1,48 +1,42 @@
-#!/bin/bash
-BACKUP_NAME=${BACKUP_NAME:-backup}
-TIMESTAMP=$(date +"%m_%d_%Y-%H_%M")
-SQL_DUMP_NAME=databases.sql.gz
-BACKUP_NAME=${BACKUP_NAME}-${TIMESTAMP}
+#!/bin/sh
+S3_OUT_FOLDER=${S3_FOLDER:-\/var\/out\/s3\/}
+START_SCRIPTS=/opt/scripts/start
+END_SCRIPTS=/opt/scripts/end
 
-# MYSQL dump
-echo "Creating mysqldump"
-mysqldump \
-  -h $DATABASE_HOST \
-  -P ${DATABASE_PORT:-3306} \
-  -u ${DATABASE_USERNAME:-root} \
-  --password="$DATABASE_PASSWORD" \
-  --single-transaction \
-  --routines \
-  --triggers \
-  --all-databases | gzip > /var/backup/$SQL_DUMP_NAME
+function execute_script {
+  if [[ -x "$1" ]]; then
+    source $1
+  else
+    echo "[BACKUP][WARNING] Script '$1' is not exectuable: ignoring"
+  fi
+}
 
-if [ $? -eq 0 ]; then
-  # Create archive
-  echo "Creating archive $BACKUP_NAME"
-  cd /var/archives && tar -zcvf $BACKUP_NAME.tar.gz -C /var/backup .
-else
-  echo "[ERROR] Backup failed during mysqldump!"
-  exit $?
+# Execute start scripts
+if [ "$(ls -A $START_SCRIPTS)" ]; then
+  for script in "$START_SCRIPTS"/*; do
+    execute_script $script
+  done
 fi
 
-if [ $? -eq 0 ]; then
-  # Cleanup sqldump
-  rm -rf /var/backup/$SQL_DUMP_NAME
+# Upload to S3
+if [ "$(ls -A $S3_OUT_FOLDER)" ]; then
+  echo "[BACKUP][Notice] Start uploading to S3"
+  aws s3 cp ${S3_FOLDER} s3://${AWS_BUCKET_NAME}${AWS_BUCKET_PATH:-\/}
 
-  # Uploads to S3
-  echo "Uploading archive to S3"
-  aws s3 cp \
-    /var/archives/$BACKUP_NAME.tar.gz \
-    s3://${AWS_BUCKET_NAME}${AWS_BUCKET_PATH:-\/}
+  # Cleanup
+  if [ $? -eq 0 ]; then
+    rm -rf ${S3_OUT_FOLDER}{*,.*}
+  else
+    echo "[BACKUP][ERROR] Backup failed during s3 copy. Will exit with code '$?'"
+    exit $?
+  fi
 else
-  echo "[ERROR] Backup failed during zipping!"
-  exit $?
+  echo "[BACKUP][Notice] Folder '${S3_OUT_FOLDER}' is empty: skipped s3 upload"
 fi
 
-if [ $? -eq 0 ]; then
-  # Cleanup archive
-  rm /var/archives/$BACKUP_NAME.tar.gz
-else
-  echo "[ERROR] Backup failed during S3 copy!"
-  exit $?
+# Execute end scripts
+if [ "$(ls -A $END_SCRIPTS)" ]; then
+  for script in "$END_SCRIPTS"/*; do
+    execute_script $script
+  done
 fi

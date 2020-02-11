@@ -1,4 +1,4 @@
-FROM alpine:3.10
+FROM docker:19.03
 MAINTAINER myself@davideperozzi.com
 
 RUN apk add --update \
@@ -9,22 +9,23 @@ RUN apk add --update \
     groff \
     bash \
     mysql-client \
-  && pip install virtualenv \
+    postgresql-client \
   && rm -rf /var/cache/apk/*
 
-# Install AWS
-RUN pip install awscli
+# Install virtualenv and AWS
+RUN pip install virtualenv awscli
 
 # Add backup script
-ADD ./backup.sh /backup.sh
-RUN chmod 755 /backup.sh
+ADD ./backup.sh /opt/scripts/backup.sh
+RUN chmod 755 /opt/scripts/backup.sh
 
-# Create archives dir
-RUN mkdir /var/archives
+# Scripts volumes
+VOLUME /opt/scripts/start
+VOLUME /opt/scripts/end
 
-# Backup volume
-VOLUME /var/backup
+# S3 output volume
+VOLUME /var/out/s3
 
 # Run cron and log output
-CMD echo "${CRON_SCHEDULE:-0 0 * * */3,*/6} /backup.sh" > /etc/crontabs/root && \
+CMD echo "${CRON_SCHEDULE:-0 0 * * */3,*/6} /opt/scripts/backup.sh" > /etc/crontabs/root && \
     crond -f -d 8
