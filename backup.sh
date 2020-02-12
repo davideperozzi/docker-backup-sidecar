@@ -26,7 +26,8 @@ if [ "$(ls -A $S3_OUT_FOLDER)" ]; then
 
   # Cleanup
   if [ $? -eq 0 ]; then
-    rm -rf ${S3_OUT_FOLDER}{*,.*}
+    echo "[BACKUP][Notice] Clear folder '$S3_OUT_FOLDER'"
+    rm -rf $S3_OUT_FOLDER/* $S3_OUT_FOLDER/.* 2> /dev/null
   else
     echo "[BACKUP][ERROR] Backup failed during s3 copy. Will exit with code '$?'"
     exit $?
