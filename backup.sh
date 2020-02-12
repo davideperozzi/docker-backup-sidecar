@@ -22,7 +22,7 @@ fi
 # Upload to S3
 if [ "$(ls -A $S3_OUT_FOLDER)" ]; then
   echo "[BACKUP][Notice] Start uploading to S3"
-  aws s3 cp ${S3_OUT_FOLDER} s3://${AWS_BUCKET_NAME}${AWS_BUCKET_PATH:-\/}
+  aws s3 cp --recursive ${S3_OUT_FOLDER} s3://${AWS_BUCKET_NAME}${AWS_BUCKET_PATH:-\/}
 
   # Cleanup
   if [ $? -eq 0 ]; then
