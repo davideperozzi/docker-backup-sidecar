@@ -6,7 +6,7 @@ To use this backup script you can simply include it in your stack like this:
 
 ```yml
 backup:
-  image: :latest
+  image: davideperozzi/backup-sidecar:latest
   environment:
     AWS_ACCESS_KEY_ID: AWSAccessKeyId
     AWS_SECRET_ACCESS_KEY: AWSSecretAccessKey
