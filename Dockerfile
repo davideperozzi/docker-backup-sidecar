@@ -10,6 +10,7 @@ RUN apk add --update \
     bash \
     mysql-client \
     postgresql-client \
+    sqlite \
   && rm -rf /var/cache/apk/*
 
 # Install virtualenv and AWS

@@ -1,5 +1,5 @@
 #!/bin/sh
-S3_OUT_FOLDER=${S3_FOLDER:-\/var\/out\/s3\/}
+S3_OUT_FOLDER=${S3_OUT_FOLDER:-\/var\/out\/s3\/}
 START_SCRIPTS=/opt/scripts/start
 END_SCRIPTS=/opt/scripts/end
 
